@@ -23,7 +23,6 @@ public class CameraBuddyActivity extends Activity {
 	private MtpDevice _mtpDevice;
 	private int _storageId;
 	
-    /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
