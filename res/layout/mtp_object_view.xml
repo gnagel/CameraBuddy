@@ -24,14 +24,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
 -->
-<GridView xmlns:android="http://schemas.android.com/apk/res/android"
-          android:id="@+id/gridview"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:columnWidth="120dp"
-          android:numColumns="auto_fit"
-          android:verticalSpacing="10dp"
-          android:horizontalSpacing="10dp"
-          android:stretchMode="spacingWidth"
-          android:gravity="center" 
-          />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			  android:orientation="vertical"
+			  android:gravity="center"
+			  android:padding="2dp"
+			  android:layout_width="wrap_content"
+			  android:layout_height="wrap_content">
+	<ImageView android:id="@+id/mtp_object_view_image"
+	           android:layout_width="match_parent"
+	           android:layout_height="100dp" />"
+	<TextView android:id="@+id/mtp_object_view_label"
+	          android:layout_width="match_parent"
+	          android:layout_height="match_parent" />"
+</LinearLayout>

@@ -28,11 +28,14 @@ package com.peterdn.camerabuddy;
 
 import android.content.Context;
 import android.mtp.MtpDevice;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 public class MtpObjectAdapter extends android.widget.BaseAdapter {
+
+	private static LayoutInflater _inflater;
 
 	private Context _context;
 	private MtpDevice _mtpDevice;
@@ -40,48 +43,48 @@ public class MtpObjectAdapter extends android.widget.BaseAdapter {
 	
 	private int[] _objectHandles;
 	
-	private String[] _names;
+	private MtpObjectLoader _objectLoader;
+	
 	
 	public MtpObjectAdapter(Context context, MtpDevice mtpDevice, int storageId) {
-		this._context = context;
-		this._mtpDevice = mtpDevice;
-		this._storageId = storageId;
+		_context = context;
+		_mtpDevice = mtpDevice;
+		_storageId = storageId;
+		_objectHandles = _mtpDevice.getObjectHandles(_storageId, 0, 0);
+		_objectLoader = new MtpObjectLoader(_mtpDevice, _storageId);
 	}
-	
-	public void loadObjects() {
-		this._objectHandles = this._mtpDevice.getObjectHandles(this._storageId, 0, 0);
-		this._names = new String[this._objectHandles.length];
-		for (int i = 0; i < this._objectHandles.length; ++i) {
-			this._names[i] = this._mtpDevice.getObjectInfo(this._objectHandles[i]).getName();
-		}
-	}
-	
+		
 	@Override
 	public int getCount() {
-		return this._objectHandles.length;
+		return _objectHandles.length;
 	}
 
 	@Override
 	public Object getItem(int arg0) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public long getItemId(int arg0) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public View getView(int arg0, View arg1, ViewGroup arg2) {
-		if (arg1 == null) {
-			TextView textView = new TextView(this._context);
-			textView.setText(this._names[arg0]);
-			return (View) textView;
-		} else {
-			return arg1;
+		if (_inflater == null) {
+			_inflater = (LayoutInflater) this._context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		}
+		
+		View view;
+		if (arg1 == null) {
+			view = _inflater.inflate(R.layout.mtp_object_view, null);
+			Log.d(this.toString(), "Adding object handle ".concat(((Integer)_objectHandles[arg0]).toString()));
+			_objectLoader.loadObject(_objectHandles[arg0], view);
+		} else {
+			view = arg1;
+		}
+		
+		return view;
 	}
 
 }

@@ -73,31 +73,13 @@ public class CameraBuddyActivity extends Activity {
 	        
 	        _storageId = (_mtpDevice.getStorageIds())[0];
 	        
-	        final MtpObjectAdapter adapter = new MtpObjectAdapter(this, _mtpDevice, _storageId);
-	        final GridView gridView = (GridView) findViewById(R.id.gridview);
-	        
-	        final ProgressDialog pd = new ProgressDialog(this);
-	        pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-	        pd.setTitle("Connecting to ".concat(_mtpDevice.getDeviceInfo().getModel()).concat("..."));
-    		pd.setCancelable(false);
-    		pd.setCanceledOnTouchOutside(false);
-    		pd.show();
-	        
-	        new Thread(new Runnable() {
-	        	public void run() {
-	        		adapter.loadObjects();
-	        		gridView.post(new Runnable() {
-	        			public void run() {
-	        				gridView.setAdapter(adapter);
-	        			}
-	        		});
-	        		pd.dismiss();
-	        	}
-	        }).start();
+	        MtpObjectAdapter adapter = new MtpObjectAdapter(this, _mtpDevice, _storageId);
+	        GridView gridView = (GridView) findViewById(R.id.gridview);
+	        gridView.setAdapter(adapter);
         }
     }
+   
     
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
