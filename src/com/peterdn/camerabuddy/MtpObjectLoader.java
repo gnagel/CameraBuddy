@@ -27,15 +27,15 @@
 package com.peterdn.camerabuddy;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.WeakHashMap;
 
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.mtp.MtpDevice;
 import android.mtp.MtpObjectInfo;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -44,17 +44,20 @@ public class MtpObjectLoader {
 
 	private MtpDevice _mtpDevice;
 	
-	private Map<Integer, View> _objectViews;
+	private Map<View, Integer> _objectViews;
 	
-	private Queue<Integer> _objectQueue;
+	private Queue<View> _objectQueue;
 	
 	private Object _sync;
 	
-	public MtpObjectLoader(MtpDevice mtpDevice, int storageId) {
+	private MtpObjectCollection _objects;
+	
+	public MtpObjectLoader(MtpDevice mtpDevice, int storageId, MtpObjectCollection objects) {
 		_mtpDevice = mtpDevice;
-		_objectViews = Collections.synchronizedMap(new HashMap<Integer, View>());
+		_objectViews = Collections.synchronizedMap(new WeakHashMap<View, Integer>());
 		_sync = new Object();
-		_objectQueue = new LinkedList<Integer>();
+		_objectQueue = new LinkedList<View>();
+		_objects = objects;
 		
 		new Thread(new Runnable() {
 			public void run() {
@@ -66,14 +69,14 @@ public class MtpObjectLoader {
 							}
 						}
 						if (!_objectQueue.isEmpty()) {
-							int object;
+							View view;
 							synchronized(_sync) {
-								object = _objectQueue.remove();
+								view = _objectQueue.remove();
 							}
+							int object = _objectViews.get(view);
 							MtpObjectInfo info = _mtpDevice.getObjectInfo(object);
 							String name = info.getName();
 							int format = info.getThumbFormat();
-							View view = _objectViews.get(object);
 							TextView tv = (TextView) view.findViewById(R.id.mtp_object_view_label);
 							tv.post(new UpdatePost(tv, name));
 							ImageView iv = (ImageView) view.findViewById(R.id.mtp_object_view_image);
@@ -83,6 +86,8 @@ public class MtpObjectLoader {
 							} else {
 								iv.post(new UpdatePost(iv, R.drawable.icon));
 							}
+							
+							_objects.add(object, name);
 						}
 						if (Thread.interrupted()) {
 							break;
@@ -96,17 +101,26 @@ public class MtpObjectLoader {
 	}
 
 	public void loadObject(int i, View view) {
-		if (!_objectViews.containsKey(i)) {
-			_objectViews.put(i, view);
-			Log.d("loadObject", "Added object handle ".concat(((Integer)i).toString()));
+		_objectViews.put(view, i);
+		ImageView imageView = (ImageView) view.findViewById(R.id.mtp_object_view_image);
+		TextView textView = (TextView) view.findViewById(R.id.mtp_object_view_label);
+		Bitmap thumbnail;
+		String text;
+		if (!_objects.contains(i)) {
+			synchronized(_sync) {
+				_objectQueue.add(view);
+				_sync.notifyAll();
+			}
+			thumbnail = null;
+			text = "";
+		} else {
+			MtpObjectCollection.MtpObjectEntry entry = _objects.getFromHandle(i);
+			thumbnail = entry.getBitmap();
+			text = entry.getName();
 		}
-		synchronized(_sync) {
-			_objectQueue.add(i);
-			Log.d("loadObject", "Queued object handle ".concat(((Integer)i).toString()));
-			_sync.notifyAll();
-		}
+		textView.setText(text);
+		imageView.setImageBitmap(thumbnail);
 	}
-
 	
 	private class UpdatePost implements Runnable {
 		private String _text;
@@ -135,7 +149,8 @@ public class MtpObjectLoader {
 				_textView.setText(_text);
 			} else if (_imageView != null) {
 				if (_data != null) {
-					_imageView.setImageBitmap(BitmapFactory.decodeByteArray(_data, 0, _data.length));
+					Bitmap bmp = BitmapFactory.decodeByteArray(_data, 0, _data.length);
+					_imageView.setImageBitmap(bmp);
 				} else {
 					_imageView.setImageResource(_icon);
 				}

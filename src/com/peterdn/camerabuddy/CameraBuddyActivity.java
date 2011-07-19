@@ -64,6 +64,8 @@ public class CameraBuddyActivity extends Activity {
         
         HashMap<String, UsbDevice> devices = usbManager.getDeviceList();
         
+        MtpObjectCollection objects = new MtpObjectCollection();
+        
         if (!devices.isEmpty()) {        
 	        UsbDevice usbDevice = devices.values().iterator().next();
 	        UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
@@ -73,7 +75,7 @@ public class CameraBuddyActivity extends Activity {
 	        
 	        _storageId = (_mtpDevice.getStorageIds())[0];
 	        
-	        MtpObjectAdapter adapter = new MtpObjectAdapter(this, _mtpDevice, _storageId);
+	        MtpObjectAdapter adapter = new MtpObjectAdapter(this, _mtpDevice, _storageId, objects);
 	        GridView gridView = (GridView) findViewById(R.id.gridview);
 	        gridView.setAdapter(adapter);
         }

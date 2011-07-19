@@ -46,12 +46,12 @@ public class MtpObjectAdapter extends android.widget.BaseAdapter {
 	private MtpObjectLoader _objectLoader;
 	
 	
-	public MtpObjectAdapter(Context context, MtpDevice mtpDevice, int storageId) {
+	public MtpObjectAdapter(Context context, MtpDevice mtpDevice, int storageId, MtpObjectCollection objects) {
 		_context = context;
 		_mtpDevice = mtpDevice;
 		_storageId = storageId;
 		_objectHandles = _mtpDevice.getObjectHandles(_storageId, 0, 0);
-		_objectLoader = new MtpObjectLoader(_mtpDevice, _storageId);
+		_objectLoader = new MtpObjectLoader(_mtpDevice, _storageId, objects);
 	}
 		
 	@Override
@@ -61,11 +61,13 @@ public class MtpObjectAdapter extends android.widget.BaseAdapter {
 
 	@Override
 	public Object getItem(int arg0) {
+		Log.d("getItem", "");
 		return null;
 	}
 
 	@Override
 	public long getItemId(int arg0) {
+		Log.d("getItemId", "");
 		return 0;
 	}
 
@@ -78,11 +80,11 @@ public class MtpObjectAdapter extends android.widget.BaseAdapter {
 		View view;
 		if (arg1 == null) {
 			view = _inflater.inflate(R.layout.mtp_object_view, null);
-			Log.d(this.toString(), "Adding object handle ".concat(((Integer)_objectHandles[arg0]).toString()));
-			_objectLoader.loadObject(_objectHandles[arg0], view);
 		} else {
 			view = arg1;
 		}
+		
+		_objectLoader.loadObject(_objectHandles[arg0], view);
 		
 		return view;
 	}
