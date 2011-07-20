@@ -29,6 +29,8 @@ package com.peterdn.camerabuddy;
 import java.io.File;
 import java.util.HashMap;
 
+import org.libraw.LibRaw;
+
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
