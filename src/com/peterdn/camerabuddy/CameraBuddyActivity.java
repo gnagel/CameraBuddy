@@ -80,6 +80,8 @@ public class CameraBuddyActivity extends Activity {
 	        MtpObjectAdapter adapter = new MtpObjectAdapter(this, _mtpDevice, _storageId, objects);
 	        GridView gridView = (GridView) findViewById(R.id.gridview);
 	        gridView.setAdapter(adapter);
+	        
+	        gridView.setOnItemClickListener(adapter);
         }
     }
    

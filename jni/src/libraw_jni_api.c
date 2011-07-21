@@ -32,3 +32,22 @@
 jstring Java_org_libraw_LibRaw_version(JNIEnv* env, jclass clazz) {
 	return (*env)->NewStringUTF(env, libraw_version());
 }
+
+jbyteArray Java_org_libraw_LibRaw_getThumbFromBuffer(JNIEnv* env, jclass clazz, jbyteArray bufferBytes) {
+	libraw_data_t * data;
+	jbyte* buffer;
+	jsize len;
+	jbyteArray ret;
+	libraw_processed_image_t * image;
+	
+	data = libraw_init(0);
+	len = (*env)->GetArrayLength(env, bufferBytes);
+	buffer = (*env)->GetByteArrayElements(env, bufferBytes, NULL);
+	libraw_open_buffer(data, (void *) buffer, (size_t) len);
+	libraw_unpack_thumb(data);
+	image = libraw_dcraw_make_mem_thumb(data, 0);
+	ret = (*env)->NewByteArray(env, image->data_size);
+	(*env)->SetByteArrayRegion(env, ret, 0, image->data_size, (jbyte *) image->data);
+	(*env)->ReleaseByteArrayElements(env, bufferBytes, buffer, 0);
+	return ret;
+}

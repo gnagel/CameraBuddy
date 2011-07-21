@@ -24,15 +24,40 @@
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.libraw;
+package com.peterdn.camerabuddy;
 
-public class LibRaw {
+import java.util.HashMap;
 
-	public static native String version();
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbManager;
+import android.mtp.MtpDevice;
+import android.mtp.MtpObjectInfo;
+import android.os.Bundle;
+import android.widget.GridView;
+import android.widget.ImageView;
+
+public class ImageViewActivity extends Activity {
 	
-	public static native byte[] getThumbFromBuffer(byte[] buffer);
-	
-	static {
-		System.loadLibrary("raw");
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.image_view);
+		
+		Bundle extras = getIntent().getExtras();
+		if (extras != null && extras.containsKey("ImageData")) {
+			byte[] imageData = extras.getByteArray("ImageData");
+			Bitmap bmp = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+			ImageView imageView = (ImageView) findViewById(R.id.imageview);
+			imageView.setImageBitmap(bmp);
+		}
+		
+		
+        
 	}
+
 }

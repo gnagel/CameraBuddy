@@ -26,14 +26,26 @@
 
 package com.peterdn.camerabuddy;
 
+import java.io.ByteArrayOutputStream;
+
+import org.libraw.LibRaw;
+
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
 import android.mtp.MtpDevice;
+import android.mtp.MtpObjectInfo;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 
-public class MtpObjectAdapter extends android.widget.BaseAdapter {
+public class MtpObjectAdapter extends android.widget.BaseAdapter implements OnItemClickListener {
 
 	private static LayoutInflater _inflater;
 
@@ -89,4 +101,36 @@ public class MtpObjectAdapter extends android.widget.BaseAdapter {
 		return view;
 	}
 
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		Intent intent = new Intent(_context, ImageViewActivity.class);
+		Bundle bundle = new Bundle();
+		
+		int object = _objectHandles[position];
+		MtpObjectInfo info = _mtpDevice.getObjectInfo(object);
+		
+		/* This format code is what my Sony alpha 200 reports. 
+		 * todo: obviously make this a bit more robust! */
+        if (info.getFormat() != 45313) {
+        	byte[] image = _mtpDevice.getObject(object, info.getCompressedSize());
+        	Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+        	bmp = bmp.createScaledBitmap(bmp, bmp.getWidth() / 5, bmp.getHeight() / 5, false);
+        	ByteArrayOutputStream out = new ByteArrayOutputStream();
+        	bmp.compress(CompressFormat.JPEG, 60, out);
+        	image = out.toByteArray();
+        	intent.putExtra("ImageData", image);
+        } else {
+        	byte[] image = _mtpDevice.getObject(object, info.getCompressedSize());
+        	byte[] thumb = LibRaw.getThumbFromBuffer(image);
+        	Bitmap bmp = BitmapFactory.decodeByteArray(thumb, 0, thumb.length);
+        	bmp = bmp.createScaledBitmap(bmp, bmp.getWidth(), bmp.getHeight(), false);
+        	ByteArrayOutputStream out = new ByteArrayOutputStream();
+        	bmp.compress(CompressFormat.JPEG, 80, out);
+        	image = out.toByteArray();
+        	intent.putExtra("ImageData", image);
+        }
+        
+        intent.putExtras(bundle);
+		_context.startActivity(intent);
+	}
 }
